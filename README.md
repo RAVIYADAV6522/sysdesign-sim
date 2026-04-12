@@ -1,98 +1,76 @@
 # SysDesign Simulator
 
-Interactive system design simulator built with React + Vite.  
-Create architecture graphs, simulate request traffic, and inspect bottlenecks, latency, throughput, and error rates.
+Interactive system design simulator (React + Vite) with an optional **Phase 2** Node.js API for saving and sharing designs (MongoDB + Google OAuth + JWT).
 
 ## Features
 
-- Drag-and-drop architecture canvas with connectable components
-- Built-in templates:
-  - Basic Web App
-  - Scalable System
-  - WhatsApp-like
-- Add/remove nodes and create custom connections
-- Simulate failures per node
-- Configure traffic (`users`, `requests/second`)
-- Live metrics:
-  - Health score
-  - End-to-end latency
-  - Effective throughput
-  - Error rate
-- Optimization suggestions based on bottlenecks
+- Drag-and-drop canvas (**React Flow**), 8 component types, templates, simulation engine
+- **Accounts (Phase 2):** Google sign-in, save/load designs, public share URLs, fork public designs
+- Metrics: health, latency, throughput, error rate, suggestions, latency chart
 
-## Tech Stack
+## Repo layout
 
-- React 19
-- Vite 8
-- ESLint 9
+```text
+.
+├── frontend/          # Vite + React SPA
+├── backend/           # Express + MongoDB + Passport (Google) + JWT
+├── package.json       # npm workspaces + dev scripts
+└── README.md
+```
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
-
-- Node.js 18+ (recommended)
+- Node.js 18+
 - npm
+- **[MongoDB Atlas](https://www.mongodb.com/atlas)** (or any MongoDB URI) — set `MONGODB_URI` in `backend/.env`. There is no bundled local database.
+- Google OAuth client (for sign-in): create credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials) with authorized redirect URI  
+  `http://localhost:4000/api/auth/google/callback` (match `GOOGLE_CALLBACK_URL` in `backend/.env`)
 
-### Install
+## Install
 
 ```bash
 npm install
 ```
 
-### Run in development
+## Development
+
+From the **repository root** (where this `package.json` lives):
+
+**Frontend + backend together** (one command):
 
 ```bash
 npm run dev
 ```
 
-Open the local URL shown in terminal (usually `http://localhost:5173`).
+This runs Vite and the API in parallel (`concurrently`).  
+- **SPA:** `http://localhost:5173` — Vite proxies `/api/*` → `http://localhost:4000`  
+- **API:** `http://localhost:4000`
 
-### Build for production
-
-```bash
-npm run build
-```
-
-### Preview production build
+**Frontend only**
 
 ```bash
-npm run preview
+npm run dev:frontend
 ```
 
-### Lint
+**Backend only**
 
 ```bash
-npm run lint
+npm run dev:backend
 ```
 
-## Project Structure
+### Backend environment
 
-```text
-.
-├── public/
-├── src/
-│   ├── App.jsx        # Main simulator UI and simulation logic
-│   ├── main.jsx       # React entry point
-│   └── index.css      # Global styles
-├── index.html
-├── package.json
-└── vite.config.js
+Copy `backend/.env.example` to `backend/.env` and fill in `MONGODB_URI`, `JWT_SECRET`, and Google OAuth variables.
+
+## Build & lint
+
+```bash
+npm run build          # production build of frontend
+npm run lint           # ESLint (frontend workspace)
+npm run preview        # preview Vite build
 ```
-
-## How to Use
-
-1. Pick a template from the sidebar.
-2. Add components from the component tab.
-3. Connect nodes using the `⊕` port on each node.
-4. Set traffic parameters.
-5. Click `Simulate`.
-6. Review KPIs, node status, and optimization suggestions.
 
 ## Notes
 
-- Node status legend:
-  - `healthy`: load < 70%
-  - `stressed`: load 70-100%
-  - `bottleneck`: load > 100%
-  - `failed`: manually failed node
-- This is a frontend simulation model for learning/exploration, not production capacity planning.
+- Without MongoDB or Google keys, the simulator UI still runs; auth and save return errors until configured (`GET /api/auth/google/status` reports whether OAuth env is set).
+- Simulation remains a **browser-side** model for learning, not capacity planning.
